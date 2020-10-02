@@ -1,0 +1,39 @@
+{
+  "name": "react-mesto-api",
+  "version": "1.0.0",
+  "description": "## Директории",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Metanka/express-mesto.git"
+  },
+  "keywords": [],
+  "author": "Vigdorova Alina",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Metanka/express-mesto/issues"
+  },
+  "homepage": "https://github.com/Metanka/express-mesto#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "celebrate": "^13.0.3",
+    "dotenv": "^8.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "express": "^4.17.1",
+    "express-winston": "^4.0.5",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.6.0",
+    "mongoose": "^5.10.1",
+    "validator": "^13.1.17",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.7.0",
+    "nodemon": "^2.0.4"
+  }
+}
