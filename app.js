@@ -24,6 +24,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger); 
 
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сейчас сервер упадет');
+  }, 0);
+});
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
