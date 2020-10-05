@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
-// eslint-disable-next-line import/no-extraneous-dependencies
 const bodyParser = require('body-parser');
 const auth = require('./middlewares/auth');
 const {createUser, login} = require('./controllers/users');
@@ -9,6 +8,7 @@ const NotFoundError = require('./errors/notFound');
 const {celebrate, Joi, errors} = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger'); 
 
+// eslint-disable-next-line no-undef
 const {PORT = 3000} = process.env;
 const app = express();
 
@@ -53,6 +53,7 @@ app.use(auth);
 app.use('/users/', require('./routes/users'));
 app.use('/cards/', require('./routes/cards'));
 
+// eslint-disable-next-line no-unused-vars
 app.use('*', (req, res) => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
@@ -61,6 +62,7 @@ app.use(errorLogger);
 
 app.use(errors());
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const {statusCode = 500, message} = err;
   res
