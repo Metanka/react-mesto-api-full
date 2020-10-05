@@ -1,12 +1,12 @@
 require('dotenv').config();
-const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const NotFoundError = require('../errors/notFound');
 const EmailError = require('../errors/emailErr');
+const BadRequest = require('../errors/badRequest');
 
-// eslint-disable-next-line no-undef
-const {NODE_ENV, JWT_SECRET} = process.env;
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getUsers = (req, res, next) => User.find({})
   .then((users) => res.status(200).send(users))
@@ -22,49 +22,59 @@ const getUser = (req, res, next) => User.findById(req.params.userId)
   .catch(next);
 
 const createUser = (req, res, next) => {
-
-  const {name, about, avatar, email} = req.body;
-  bcrypt.hash(req.body.password, 10)
-    .then(hash => {
-      User.create({name, about, avatar, email, password: hash})
-        .then((user) => {
-          res.status(201).send({
-            _id: user._id,
-            email: user.email,
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-          });
-        })
-        .catch((err) => {
-          if (err.code === 11000) {
-            throw new EmailError('Пользователь с таким email уже зарегестрирован')
-          } else {
-            next(err);
-          }
-        })
-        .catch(next);
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .catch((err) => {
+      if (err.code === 11000) {
+        throw new EmailError('Пользователь с таким email уже существует');
+      } else if (err.name === 'validatorError') {
+        throw new BadRequest('Данные не прошли валидацию');
+      } else {
+        next(err);
+      }
     })
-}
+    .then((user) => res.status(201).send({
+      data: {
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      },
+    }))
+    .catch(next);
+};
 
 const login = (req, res, next) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
+    .catch(() => {
+      throw new EmailError('Пользователь с email не найден');
+    })
     .then((user) => {
       const token = jwt.sign(
-        {_id: user._id},
+        { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-        {expiresIn: '7d'}
+        { expiresIn: '7d' },
       );
-      res.send({token})
+      res.send({ token });
     })
     .catch(next);
-}
+};
 
 const updateUser = (req, res, next) => {
-  const {name, about} = req.body;
+  const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, {name, about}, {new: true, runValidators: true})
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
         res.status(200).send(user);
@@ -75,9 +85,9 @@ const updateUser = (req, res, next) => {
 };
 
 const updateAvatar = (req, res, next) => {
-  const {avatar} = req.body;
+  const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, {avatar}, {new: true, runValidators: true})
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
         res.status(200).send(user);
@@ -88,5 +98,5 @@ const updateAvatar = (req, res, next) => {
 };
 
 module.exports = {
-  getUsers, getUser, createUser, updateUser, updateAvatar, login
+  getUsers, getUser, createUser, updateUser, updateAvatar, login,
 };

@@ -12,26 +12,25 @@ const deleteCard = (req, res, next) => {
   Card.findById(req.params._id)
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Недостаточно прав')
+        throw new ForbiddenError('Недостаточно прав');
       }
       Card.findByIdAndRemove(req.params.cardId)
-        .then((card) => {
-          if (card == null) {
+        .then((item) => {
+          if (item == null) {
             throw new NotFoundError('Такой карточки не существует');
           }
-          res.status(200).send(card);
-        })
+          res.status(200).send(item);
+        });
     })
     .catch(next);
-}
-
+};
 
 const createCard = (req, res, next) => {
-  const {name, link} = req.body;
+  const { name, link } = req.body;
 
-  Card.create({name, link, owner: req.user._id})
-    .then((card) => res.send({data: card}))
-    .catch(err => {
+  Card.create({ name, link, owner: req.user._id })
+    .then((card) => res.send({ data: card }))
+    .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError('Указаны некорректные данные при создании карточки');
       }
@@ -42,10 +41,10 @@ const createCard = (req, res, next) => {
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    {$addToSet: {likes: req.params.cardId}}, // добавить _id в массив, если его там нет
-    {new: true},
+    { $addToSet: { likes: req.params.cardId } }, // добавить _id в массив, если его там нет
+    { new: true },
   ).then((card) => res.status(201).send(card))
-    .catch(err => {
+    .catch((err) => {
       if (err.name === 'NotValidId') {
         throw new NotFoundError('Нет карточки с таким id');
       }
@@ -55,10 +54,10 @@ const likeCard = (req, res, next) => {
 
 const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
-  {$pull: {likes: req.user._id}}, // убрать _id из массива
-  {new: true},
+  { $pull: { likes: req.user._id } }, // убрать _id из массива
+  { new: true },
 ).then((card) => res.status(201).send(card))
-  .catch(err => {
+  .catch((err) => {
     if (err.name === 'NotValidId') {
       throw new NotFoundError('Нет карточки с таким id');
     }
